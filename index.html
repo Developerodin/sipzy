@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#2c062e">
+  <meta name="description" content="Sipzy pre-mixed cocktails in punchy fruit flavours. Sip. Chill. Repeat.">
+  <title>Sipzy — Sip. Chill. Repeat.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header" data-header>
+    <a class="wordmark" href="#top" aria-label="Sipzy home">
+      <img class="wordmark-logo wordmark-logo--white" src="assets/sipzy-logo-white.svg" alt="">
+      <img class="wordmark-logo wordmark-logo--black" src="assets/sipzy-logo-black.svg" alt="">
+    </a>
+    <nav aria-label="Primary navigation">
+      <a href="#range">The range</a>
+      <a href="#story">Our mood</a>
+      <a href="#ritual">How to Sipzy</a>
+    </nav>
+    <a class="header-pill" href="#contact">Say hello <span aria-hidden="true">↗</span></a>
+  </header>
+
+  <main id="main">
+    <section id="top" class="hero-scroll" aria-label="Sipzy Jamun Shot scroll film">
+      <div class="hero-sticky">
+        <video
+          class="hero-video"
+          data-scroll-video
+          muted
+          playsinline
+          preload="auto"
+          poster="assets/hero-poster.png"
+          aria-label="A Sipzy Jamun Shot bottle floating through a purple world and joining the full flavour range"
+        ></video>
+        <div class="hero-shade"></div>
+        <div class="hero-progress" aria-hidden="true"><i data-progress></i></div>
+
+        <div class="hero-copy" aria-live="polite">
+          <p class="eyebrow">Pre-mixed cocktails · 8% &amp; 16% ABV</p>
+          <div class="hero-stage is-active" data-stage="0">
+            <h1>A little fruit.<br><em>A lot of mood.</em></h1>
+            <p>Made to float into the plan—and turn the plan into a story.</p>
+          </div>
+          <div class="hero-stage" data-stage="1">
+            <h2>Bright flavour.<br><em>No small talk.</em></h2>
+            <p>Chilled, ready and already mixed. Your only job is to pop the cap.</p>
+          </div>
+          <div class="hero-stage" data-stage="2">
+            <h2>Easy drift.<br><em>Bold arrival.</em></h2>
+            <p>Choose 8% for the easy flow or 16% when the night wants more.</p>
+          </div>
+          <div class="hero-stage hero-stage--final" data-stage="3">
+            <h2>Meet the moods.</h2>
+            <a href="#range" class="round-link">Explore all flavours <span aria-hidden="true">↓</span></a>
+          </div>
+        </div>
+
+        <div class="scroll-cue" aria-hidden="true"><span>Scroll to pour</span><i></i></div>
+      </div>
+      <div class="hero-scrub-spacer" aria-hidden="true" data-scrub-spacer></div>
+      <section class="ticker section-cover" aria-label="Sipzy brand line">
+        <div class="ticker-track">
+          <span>Sip. Chill. Repeat.</span><i>✦</i><span>Fruit-forward moods.</span><i>✦</i>
+          <span>Sip. Chill. Repeat.</span><i>✦</i><span>Fruit-forward moods.</span><i>✦</i>
+        </div>
+      </section>
+      <section class="intro section-pad section-cover" id="story">
+        <div class="intro-orbit" aria-hidden="true"><span>8%</span><span>16%</span></div>
+        <p class="kicker reveal">This is Sipzy</p>
+        <h2 class="display-copy reveal">Cocktails that come<br><em>ready for the moment.</em></h2>
+        <div class="intro-grid reveal">
+          <p>Forget the shaker, the measurements and the “who’s making the drinks?” debate. Sipzy brings fruit-led cocktail moods straight to the bottle.</p>
+          <p>Cold from the fridge. Bright on the table. Built for house parties, rooftop plans, late-night playlists and everything that happens in between.</p>
+        </div>
+      </section>
+    </section>
+
+    <section class="range-section section-pad" id="range">
+      <div class="section-head reveal">
+        <div>
+          <p class="kicker">Choose your mood</p>
+          <h2>The Sipzy range</h2>
+        </div>
+        <div class="range-toggle" role="group" aria-label="Choose alcohol range">
+          <button class="is-active" type="button" data-range="8">8% Easy</button>
+          <button type="button" data-range="16">16% Bold</button>
+        </div>
+      </div>
+
+      <div class="range-meta reveal">
+        <p data-range-intro>Seven bright flavours in the compact 275 ml bottle—made for the easy drift.</p>
+        <span data-range-count>01—07</span>
+      </div>
+      <div class="product-rail" data-product-rail aria-live="polite"></div>
+    </section>
+
+    <section class="duo" data-duo aria-label="Compare Sipzy strengths">
+      <article class="duo-panel duo-panel--easy">
+        <div class="duo-copy">
+          <p class="kicker">The easy pour</p>
+          <strong>8<span>%</span></strong>
+          <h3>Light on its feet.<br>Big on flavour.</h3>
+          <p>275 ml · 7 fruit-led moods</p>
+        </div>
+        <img src="assets/bottles/07-watermelon-wave-8pct-275ml.png" alt="Sipzy Watermelon Wave 8% bottle" loading="lazy">
+      </article>
+      <article class="duo-panel duo-panel--bold">
+        <div class="duo-copy">
+          <p class="kicker">The stronger statement</p>
+          <strong>16<span>%</span></strong>
+          <h3>Deeper character.<br>After-dark energy.</h3>
+          <p>330 ml · 5 vintage-inspired moods</p>
+        </div>
+        <img src="assets/bottles/11-jamun-cask-16pct-330ml.png" alt="Sipzy Jamun Cask 16% bottle" loading="lazy">
+      </article>
+    </section>
+
+    <section class="ritual section-pad" id="ritual">
+      <header class="ritual-head reveal">
+        <p class="kicker">The complicated recipe</p>
+        <h2>Three steps.<br>That’s the whole thing.</h2>
+      </header>
+      <div class="ritual-grid">
+        <article class="ritual-card reveal">
+          <span>01</span>
+          <div class="ritual-icon" aria-hidden="true">❄</div>
+          <h3>Chill it</h3>
+          <p>Give the bottle a proper fridge moment. Colder is the mood.</p>
+        </article>
+        <article class="ritual-card reveal">
+          <span>02</span>
+          <div class="ritual-icon" aria-hidden="true">✦</div>
+          <h3>Pop it</h3>
+          <p>Silver cap off. Playlist up. No measuring, mixing or waiting.</p>
+        </article>
+        <article class="ritual-card reveal">
+          <span>03</span>
+          <div class="ritual-icon" aria-hidden="true">◡</div>
+          <h3>Sipzy it</h3>
+          <p>Pour over ice or drink chilled. Then let the night find its pace.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="manifesto">
+      <div class="manifesto-shape" aria-hidden="true"></div>
+      <div class="manifesto-inner section-pad reveal">
+        <p class="kicker">Our kind of night</p>
+        <h2>Less planning.<br>More <em>plot twists.</em></h2>
+        <p>Sipzy is made for people who bring the playlist, save the group chat and know the best stories rarely start with “we stayed in.”</p>
+      </div>
+    </section>
+
+    <section class="contact section-pad" id="contact">
+      <p class="kicker reveal">Stockists · Events · Collaborations</p>
+      <h2 class="reveal">Let’s make the<br><em>next pour pop.</em></h2>
+      <a class="contact-pill reveal" href="mailto:hello@sipzy.in">hello@sipzy.in <span aria-hidden="true">↗</span></a>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <a class="footer-wordmark" href="#top" aria-label="Sipzy home">
+      <img src="assets/sipzy-logo-white.svg" alt="">
+    </a>
+    <p>Pre-mixed cocktails for fruit-forward moods.</p>
+    <div class="footer-links">
+      <a href="#range">Range</a>
+      <a href="#story">Story</a>
+      <a href="#ritual">Serve</a>
+    </div>
+    <p class="legal">For adults of legal drinking age only. Legal drinking age varies by location. Please enjoy responsibly.</p>
+  </footer>
+</body>
+</html>
