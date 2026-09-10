@@ -169,6 +169,15 @@ function prefersReducedMotion() {
   return reduceMotion.matches;
 }
 
+let pageScrollY = window.scrollY;
+let scrollingDown = true;
+window.addEventListener("scroll", () => {
+  const y = window.scrollY;
+  if (Math.abs(y - pageScrollY) < 1) return;
+  scrollingDown = y > pageScrollY;
+  pageScrollY = y;
+}, { passive: true });
+
 const productCardObserver = new IntersectionObserver(entries => {
   entries.forEach(entry => {
     if (entry.isIntersecting) {
@@ -261,6 +270,50 @@ const revealObserver = new IntersectionObserver(entries => {
 
 document.querySelectorAll(".reveal").forEach(element => revealObserver.observe(element));
 
+(() => {
+  const title = document.querySelector(".ritual-title");
+  if (!title) return;
+
+  function armDrop() {
+    title.classList.toggle("is-droppable", !prefersReducedMotion());
+  }
+
+  function playFall() {
+    const fromY = -Math.max(0, Math.round(title.getBoundingClientRect().top));
+    title.style.setProperty("--ritual-fall", `${fromY}px`);
+    title.classList.remove("is-falling", "is-settled");
+    void title.offsetWidth;
+    title.classList.add("is-falling");
+  }
+
+  title.addEventListener("animationend", event => {
+    if (event.animationName !== "ritual-title-fall") return;
+    title.classList.add("is-settled");
+    title.classList.remove("is-falling");
+  });
+
+  const titleObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) {
+        title.classList.remove("is-falling", "is-settled");
+        return;
+      }
+      if (prefersReducedMotion()) {
+        title.classList.remove("is-falling", "is-droppable");
+        title.classList.add("is-settled");
+        return;
+      }
+      const enteringFromBelow = entry.boundingClientRect.top > window.innerHeight * 0.12;
+      if (scrollingDown && enteringFromBelow) playFall();
+      else title.classList.add("is-settled");
+    });
+  }, { threshold: 0.18, rootMargin: "0px 0px -8%" });
+
+  armDrop();
+  reduceMotion.addEventListener("change", armDrop);
+  titleObserver.observe(title);
+})();
+
 const duo = document.querySelector("[data-duo]");
 if (duo) {
   const duoObserver = new IntersectionObserver(entries => {
@@ -273,9 +326,13 @@ if (duo) {
 
 document.querySelectorAll('a[href^="#"]').forEach(link => {
   link.addEventListener("click", event => {
-    const target = document.querySelector(link.getAttribute("href"));
+    const href = link.getAttribute("href");
+    const target = document.querySelector(href);
     if (!target) return;
     event.preventDefault();
+    if (href === "#contact" && window.scrollToContactCover?.(prefersReducedMotion() ? "auto" : "smooth")) {
+      return;
+    }
     target.scrollIntoView({ behavior: "smooth" });
   });
 });
@@ -285,101 +342,64 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
   const section = document.querySelector("[data-find-sipzy]");
   if (!section) return;
 
-  const flavours = [
-    {
-      id: "cranberry",
-      name: "Cranberry Affair",
-      abv: "8% ABV",
-      size: "275 ML",
-      meta: "8% ABV · 275 ML",
-      accent: "#ff404c",
-      fruit: "assets/fruits/cranberry.png",
-      bottle: "assets/bottles/01-cranberry-affair-8pct-275ml.png",
-      wordmark: "Cranberry",
-      angle: -90
-    },
+  const bottles = [
     {
       id: "jamun",
-      name: "Jamun Shot",
-      abv: "8% ABV",
-      size: "275 ML",
-      meta: "8% ABV · 275 ML",
-      accent: "#7f31f3",
-      fruit: "assets/fruits/Group 2.png",
-      bottle: "assets/bottles/02-jamun-shot-8pct-275ml.png",
-      wordmark: "Jamun",
-      angle: -38
+      name: "Jamun Cask",
+      abv: "16% ABV",
+      size: "330 ML",
+      accent: "#6B2D8B",
+      src: "assets/bottles/11-jamun-cask-16pct-330ml.png",
+      angle: -90,
+      line: "Born from India’s beloved monsoon fruit, crafted for every good mood. Pour, sip, and let the rich jamun flavour turn ordinary moments into unforgettable stories."
     },
     {
       id: "mango",
-      name: "Mango Mood",
-      abv: "8% ABV",
-      size: "275 ML",
-      meta: "8% ABV · 275 ML",
-      accent: "#ff7a18",
-      fruit: "assets/fruits/mango.png",
-      bottle: "assets/bottles/03-mango-mood-8pct-275ml.png",
-      wordmark: "Mango",
-      angle: 14
+      name: "Mango Mirage",
+      abv: "16% ABV",
+      size: "330 ML",
+      accent: "#E08A2E",
+      src: "assets/bottles/12-mango-mirage-16pct-330ml.png",
+      angle: -18,
+      line: "Made from the flavour of India's most loved fruit. Rich, tropical, and irresistibly smooth—every sip tastes like summer in full swing."
     },
     {
       id: "orange",
-      name: "Orange Voltage",
-      abv: "8% ABV",
-      size: "275 ML",
-      meta: "8% ABV · 275 ML",
-      accent: "#ff9a2e",
-      fruit: "assets/fruits/orange.png",
-      bottle: "assets/bottles/04-orange-voltage-8pct-275ml.png",
-      wordmark: "Orange",
-      angle: 66
+      name: "Orange Oak",
+      abv: "16% ABV",
+      size: "330 ML",
+      accent: "#F07828",
+      src: "assets/bottles/10-orange-oak-16pct-330ml.png",
+      angle: 54,
+      line: "Born under golden summer skies, bursting with bright citrus energy. A refreshing sip that brings sunshine, laughter, and good vibes to every gathering."
+    },
+    {
+      id: "cranberry",
+      name: "Cranberry Cellar",
+      abv: "16% ABV",
+      size: "330 ML",
+      accent: "#9B1C3A",
+      src: "assets/bottles/09-cranberry-cellar-16pct-330ml.png",
+      angle: 126,
+      line: "A bold blend of sweet and tart, made for those who stand out. Vibrant, refreshing, and full of character—just like the nights you'll remember."
     },
     {
       id: "mojito",
-      name: "Mojito Drift",
-      abv: "8% ABV",
-      size: "275 ML",
-      meta: "8% ABV · 275 ML",
-      accent: "#b7ed37",
-      fruit: "assets/fruits/mojito drift.png",
-      bottle: "assets/bottles/05-mojito-drift-8pct-275ml.png",
-      wordmark: "Mojito",
-      angle: 118
-    },
-    {
-      id: "lemonade",
-      name: "Lemonade Twist",
-      abv: "8% ABV",
-      size: "275 ML",
-      meta: "8% ABV · 275 ML",
-      accent: "#f6d94d",
-      fruit: "assets/fruits/lemonade twist.png",
-      bottle: "assets/bottles/06-lemonade-twist-8pct-275ml.png",
-      wordmark: "Lemonade",
-      angle: 170
-    },
-    {
-      id: "watermelon",
-      name: "Watermelon Wave",
-      abv: "8% ABV",
-      size: "275 ML",
-      meta: "8% ABV · 275 ML",
-      accent: "#ff3e8b",
-      fruit: "assets/fruits/watermelon.png",
-      bottle: "assets/bottles/07-watermelon-wave-8pct-275ml.png",
-      wordmark: "Watermelon",
-      angle: 222
+      name: "Mojito Heritage",
+      abv: "16% ABV",
+      size: "330 ML",
+      accent: "#A8C93A",
+      src: "assets/bottles/08-mojito-heritage-16pct-330ml.png",
+      angle: 198,
+      line: "Inspired by cool mint breezes and carefree evenings. Fresh, lively, and effortlessly smooth — your perfect companion for every celebration."
     }
   ];
 
   const field = section.querySelector("[data-find-field]");
-  const fruitsRoot = section.querySelector("[data-find-fruits]");
-  const bottleEl = section.querySelector("[data-find-bottle]");
-  const bottleImg = section.querySelector("[data-find-bottle-img]");
+  const orbitRoot = section.querySelector("[data-find-orbit]");
+  const play = section.querySelector("[data-find-play]");
   const ripple = section.querySelector("[data-find-ripple]");
-  const hoverLabel = section.querySelector("[data-find-hover-label]");
-  const hoverName = section.querySelector("[data-find-hover-name]");
-  const hoverMeta = section.querySelector("[data-find-hover-meta]");
+  const story = section.querySelector("[data-find-story]");
   const detail = section.querySelector("[data-find-detail]");
   const detailName = section.querySelector("[data-find-detail-name]");
   const detailAbv = section.querySelector("[data-find-detail-abv]");
@@ -391,20 +411,21 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
   const fallback = section.querySelector("[data-find-fallback]");
 
   const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
-  const narrowQuery = window.matchMedia("(max-width: 900px)");
+  const narrowQuery = window.matchMedia("(max-width: 747px)");
 
   let nodes = [];
   let selectedId = null;
-  let hoveredId = null;
+  let openedAt = 0;
   let inView = false;
   let rafId = 0;
   let transitioning = false;
+  let enterTimer = 0;
   let collisionUntil = 0;
   let pointer = { x: 0, y: 0, active: false };
   let center = { x: 0, y: 0 };
   let radius = 180;
   let touchStartX = 0;
-  let preloaded = new Set();
+  let selectedSpot = { x: 0, y: -8, scale: 1.95 };
 
   function isReduced() {
     return reduceMotion.matches;
@@ -414,50 +435,39 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
     return narrowQuery.matches || !finePointer.matches;
   }
 
-  function flavourById(id) {
-    return flavours.find(item => item.id === id);
+  function bottleById(id) {
+    return bottles.find(item => item.id === id);
   }
 
-  function flavourIndex(id) {
-    return flavours.findIndex(item => item.id === id);
+  function bottleIndex(id) {
+    return bottles.findIndex(item => item.id === id);
   }
-
-  function preloadBottle(src) {
-    if (!src || preloaded.has(src)) return;
-    const img = new Image();
-    img.decoding = "async";
-    img.src = src;
-    preloaded.add(src);
-  }
-
-  let selectedFruit = { x: -132, y: 42, scale: 1.08 };
 
   function measure() {
     const rect = field.getBoundingClientRect();
     center = { x: rect.width / 2, y: rect.height / 2 };
-    const fruitHalf = (nodes[0]?.el.offsetWidth || 96) / 2;
-    const labelPad = 28;
-    const inset = fruitHalf + labelPad;
-    radius = Math.max(72, Math.min(rect.width, rect.height) / 2 - inset);
+    const item = nodes[0]?.el;
+    const maxSide = Math.max(item?.offsetWidth || 96, item?.offsetHeight || 120);
+    const visualHalf = maxSide * 0.22;
+    const inset = visualHalf + 20;
+    radius = Math.max(96, Math.min(rect.width, rect.height) / 2 - inset);
     field.style.setProperty("--orbit", `${radius * 2}px`);
-    selectedFruit = isMobileLike()
-      ? { x: -Math.min(108, rect.width * 0.28), y: 36, scale: 1.08 }
-      : { x: -132, y: 42, scale: 1.08 };
+    selectedSpot = isMobileLike()
+      ? { x: 0, y: -20, scale: 1.72 }
+      : { x: 0, y: -10, scale: 1.95 };
   }
 
-  function buildFruits() {
-    nodes = flavours.map((flavour, index) => {
-      const el = fruitsRoot.querySelector(`[data-flavour="${flavour.id}"]`);
-      const phase = index * 0.87;
+  function buildOrbit() {
+    nodes = bottles.map((bottle, index) => {
+      const el = orbitRoot.querySelector(`[data-bottle="${bottle.id}"]`);
       return {
-        flavour,
+        bottle,
         el,
-        homeAngle: (flavour.angle * Math.PI) / 180,
-        phase,
+        homeAngle: (bottle.angle * Math.PI) / 180,
+        phase: index * 0.87,
         floatAmp: 8 + (index % 3) * 3,
         rotAmp: 4 + (index % 4),
         scaleBase: 1,
-        depth: 0.9,
         x: 0,
         y: 0,
         scale: 1,
@@ -470,29 +480,11 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
     }).filter(node => node.el);
   }
 
-  function setHoverLabel(flavour, visible) {
-    if (!flavour || isMobileLike()) {
-      hoverLabel.classList.remove("is-visible");
-      hoverLabel.setAttribute("aria-hidden", "true");
-      return;
-    }
-    if (visible) {
-      hoverName.textContent = flavour.name.toUpperCase();
-      hoverMeta.textContent = flavour.meta;
-      hoverLabel.classList.add("is-visible");
-      hoverLabel.setAttribute("aria-hidden", "false");
-    } else {
-      hoverLabel.classList.remove("is-visible");
-      hoverLabel.setAttribute("aria-hidden", "true");
-    }
-  }
-
-  function showDetail(flavour) {
-    detailName.textContent = flavour.name.toUpperCase();
-    detailAbv.textContent = flavour.abv;
-    detailSize.textContent = flavour.size;
+  function showDetail(bottle) {
+    detailName.textContent = bottle.name.toUpperCase();
+    detailAbv.textContent = bottle.abv;
+    detailSize.textContent = bottle.size;
     detail.classList.remove("is-visible");
-    // Retrigger text reveal
     void detail.offsetWidth;
     detail.classList.add("is-visible");
   }
@@ -501,8 +493,22 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
     detail.classList.remove("is-visible");
   }
 
+  function showStory(bottle) {
+    story.textContent = bottle.line;
+    story.hidden = false;
+    story.setAttribute("aria-hidden", "false");
+  }
+
+  function hideStory() {
+    story.textContent = "";
+    story.hidden = true;
+    story.setAttribute("aria-hidden", "true");
+  }
+
   function setControls() {
-    nav.hidden = !selectedId;
+    const open = Boolean(selectedId);
+    nav.hidden = !open;
+    play.classList.toggle("is-open", open);
   }
 
   function applyNodeTransform(node) {
@@ -533,10 +539,9 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
     const damp = 0.14;
 
     nodes.forEach(node => {
-      if (selectedId && node.flavour.id === selectedId) return;
+      if (selectedId && node.bottle.id === selectedId) return;
 
       const home = homePosition(node, t);
-      const isHovered = hoveredId && !selectedId && node.flavour.id === hoveredId;
       let targetX = home.x;
       let targetY = home.y;
       let targetScale = home.scale;
@@ -544,7 +549,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
       let targetBlur = 0;
       let targetOpacity = 1;
 
-      if (useGravity && !isHovered) {
+      if (useGravity) {
         const dx = px - home.x;
         const dy = py - home.y;
         const dist = Math.hypot(dx, dy) || 1;
@@ -561,36 +566,11 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
       } else {
         node.gx *= 0.82;
         node.gy *= 0.82;
-        if (!isHovered) {
-          targetX += node.gx;
-          targetY += node.gy;
-        }
+        targetX += node.gx;
+        targetY += node.gy;
       }
 
-      if (hoveredId && !selectedId) {
-        if (isHovered) {
-          targetX = home.x * 0.9;
-          targetY = home.y * 0.9;
-          targetScale = 1.12;
-          targetBlur = 0;
-          targetOpacity = 1;
-          targetRotate *= 0.45;
-          node.el.classList.add("is-hovered");
-          node.el.classList.remove("is-dimmed");
-        } else {
-          targetX *= 1.08;
-          targetY *= 1.08;
-          targetScale *= 0.92;
-          targetBlur = 0.8;
-          targetOpacity = 0.55;
-          node.el.classList.add("is-dimmed");
-          node.el.classList.remove("is-hovered");
-        }
-      } else {
-        node.el.classList.remove("is-hovered", "is-dimmed");
-      }
-
-      if (selectedId && node.flavour.id !== selectedId) {
+      if (selectedId && node.bottle.id !== selectedId) {
         targetX *= 1.12;
         targetY *= 1.12;
         targetScale *= 0.62;
@@ -611,24 +591,24 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
     });
   }
 
-  function placeSelectedFruit(node, t, now) {
+  function placeSelectedBottle(node, t, now) {
     if (now < collisionUntil) {
       const progress = Math.min(1, Math.max(0, 1 - (collisionUntil - now) / 520));
       const ease = 1 - Math.pow(1 - progress, 3);
       node.x += (0 - node.x) * (0.16 + ease * 0.2);
       node.y += (0 - node.y) * (0.16 + ease * 0.2);
-      node.scale = 1.18 + Math.sin(ease * Math.PI) * 0.22;
+      node.scale = selectedSpot.scale * 0.86 + Math.sin(ease * Math.PI) * 0.18;
       node.rotate += (0 - node.rotate) * 0.15;
       node.blur = 0;
       node.opacity = 1;
       applyNodeTransform(node);
       return;
     }
-    const targetX = selectedFruit.x + Math.sin(t * 0.5) * 3;
-    const targetY = selectedFruit.y + Math.cos(t * 0.4) * 4;
+    const targetX = selectedSpot.x + Math.sin(t * 0.5) * 3;
+    const targetY = selectedSpot.y + Math.cos(t * 0.4) * 4;
     node.x += (targetX - node.x) * 0.12;
     node.y += (targetY - node.y) * 0.12;
-    node.scale += (selectedFruit.scale - node.scale) * 0.12;
+    node.scale += (selectedSpot.scale - node.scale) * 0.12;
     node.rotate = Math.sin(t * 0.3) * 3;
     node.blur = 0;
     node.opacity = 1;
@@ -642,8 +622,8 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
     }
     updateIdlePhysics(now);
     if (selectedId) {
-      const active = nodes.find(n => n.flavour.id === selectedId);
-      if (active) placeSelectedFruit(active, now / 1000, now);
+      const active = nodes.find(n => n.bottle.id === selectedId);
+      if (active) placeSelectedBottle(active, now / 1000, now);
     }
     rafId = requestAnimationFrame(tick);
   }
@@ -664,10 +644,10 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
   function snapStaticLayout() {
     nodes.forEach(node => {
       const home = homePosition(node, 0);
-      if (selectedId === node.flavour.id) {
-        node.x = selectedFruit.x;
-        node.y = selectedFruit.y;
-        node.scale = selectedFruit.scale;
+      if (selectedId === node.bottle.id) {
+        node.x = selectedSpot.x;
+        node.y = selectedSpot.y;
+        node.scale = selectedSpot.scale;
         node.rotate = 0;
         node.opacity = 1;
         node.blur = 0;
@@ -696,59 +676,54 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
     ripple.classList.add("is-burst");
   }
 
-  function selectFlavour(id, { fromSwap = false } = {}) {
-    const flavour = flavourById(id);
-    if (!flavour || transitioning) return;
+  function selectBottle(id, { fromSwap = false } = {}) {
+    const bottle = bottleById(id);
+    if (!bottle) return;
+    if (transitioning && !fromSwap) return;
     if (selectedId === id && !fromSwap) return;
 
+    if (enterTimer) {
+      window.clearTimeout(enterTimer);
+      enterTimer = 0;
+    }
+
     transitioning = true;
-    hoveredId = null;
-    setHoverLabel(null, false);
     field.classList.add("is-selected");
     requestAnimationFrame(() => measure());
 
     const previousId = selectedId;
-    const activeNode = nodes.find(n => n.flavour.id === id);
-    preloadBottle(flavour.bottle);
-
-    if (previousId && previousId !== id) {
-      bottleEl.classList.add("is-exiting");
-      bottleEl.classList.remove("is-visible");
-    }
+    const activeNode = nodes.find(n => n.bottle.id === id);
 
     nodes.forEach(node => {
-      node.el.classList.toggle("is-active", node.flavour.id === id);
-      node.el.setAttribute("aria-pressed", node.flavour.id === id ? "true" : "false");
+      node.el.classList.toggle("is-active", node.bottle.id === id);
+      node.el.setAttribute("aria-pressed", node.bottle.id === id ? "true" : "false");
     });
 
     const runEnter = () => {
       selectedId = id;
+      openedAt = performance.now();
+      showDetail(bottle);
+      showStory(bottle);
       setControls();
-      burstRipple(flavour.accent);
+      burstRipple(bottle.accent);
       collisionUntil = performance.now() + 520;
 
       if (activeNode && !isReduced()) {
-        activeNode.scale = 1.38;
+        activeNode.scale = selectedSpot.scale * 0.82;
         applyNodeTransform(activeNode);
       }
 
-      bottleImg.src = flavour.bottle;
-      bottleImg.alt = `Sipzy ${flavour.name} ${flavour.abv} bottle`;
-      bottleEl.setAttribute("aria-hidden", "false");
-      bottleEl.classList.remove("is-exiting");
-
       requestAnimationFrame(() => {
-        bottleEl.classList.add("is-visible");
-        showDetail(flavour);
         if (isReduced()) snapStaticLayout();
-        window.setTimeout(() => {
+        enterTimer = window.setTimeout(() => {
           transitioning = false;
+          enterTimer = 0;
         }, fromSwap ? 420 : 700);
       });
     };
 
     if (previousId && previousId !== id && !isReduced()) {
-      window.setTimeout(runEnter, 180);
+      enterTimer = window.setTimeout(runEnter, 180);
     } else {
       runEnter();
     }
@@ -757,30 +732,31 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
   }
 
   function resetField() {
-    if (transitioning && selectedId) return;
+    if (enterTimer) {
+      window.clearTimeout(enterTimer);
+      enterTimer = 0;
+    }
     selectedId = null;
-    hoveredId = null;
+    openedAt = 0;
     transitioning = false;
     field.classList.remove("is-selected");
     requestAnimationFrame(() => measure());
-    bottleEl.classList.remove("is-visible", "is-exiting");
-    bottleEl.setAttribute("aria-hidden", "true");
     hideDetail();
-    setHoverLabel(null, false);
+    hideStory();
     setControls();
     nodes.forEach(node => {
-      node.el.classList.remove("is-active", "is-hovered", "is-dimmed", "is-pushed");
+      node.el.classList.remove("is-active", "is-pushed");
       node.el.setAttribute("aria-pressed", "false");
     });
     if (isReduced()) snapStaticLayout();
     ensureLoop();
   }
 
-  function stepFlavour(delta) {
+  function stepBottle(delta) {
     if (!selectedId) return;
-    const index = flavourIndex(selectedId);
-    const next = flavours[(index + delta + flavours.length) % flavours.length];
-    selectFlavour(next.id, { fromSwap: true });
+    const index = bottleIndex(selectedId);
+    const next = bottles[(index + delta + bottles.length) % bottles.length];
+    selectBottle(next.id, { fromSwap: true });
   }
 
   function onPointerMove(event) {
@@ -791,56 +767,37 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
     pointer.active = true;
   }
 
-  function onPointerLeave() {
+  function onFieldPointerLeave() {
     pointer.active = false;
-    if (!selectedId) {
-      hoveredId = null;
-      setHoverLabel(null, false);
-    }
   }
 
-  function bindFruitEvents() {
+  function bindOrbitEvents() {
     nodes.forEach(node => {
       node.el.addEventListener("pointerenter", () => {
         if (isMobileLike() || selectedId || isReduced()) return;
-        hoveredId = node.flavour.id;
-        setHoverLabel(node.flavour, true);
-        preloadBottle(node.flavour.bottle);
-      });
-      node.el.addEventListener("pointerleave", () => {
-        if (hoveredId === node.flavour.id) {
-          hoveredId = null;
-          setHoverLabel(null, false);
-        }
+        selectBottle(node.bottle.id);
       });
       node.el.addEventListener("click", event => {
         event.stopPropagation();
-        selectFlavour(node.flavour.id);
-      });
-      node.el.addEventListener("focus", () => {
-        if (selectedId || isReduced()) return;
-        hoveredId = node.flavour.id;
-        setHoverLabel(node.flavour, true);
-      });
-      node.el.addEventListener("blur", () => {
-        if (hoveredId === node.flavour.id && !selectedId) {
-          hoveredId = null;
-          setHoverLabel(null, false);
+        if (selectedId === node.bottle.id) {
+          if (performance.now() - openedAt < 400) return;
+          resetField();
+          return;
         }
+        if (selectedId) return;
+        selectBottle(node.bottle.id);
       });
     });
   }
 
   function setupFallback() {
-    fallback.querySelectorAll("[data-fallback-flavour]").forEach(button => {
+    fallback.querySelectorAll("[data-fallback-bottle]").forEach(button => {
       button.addEventListener("click", () => {
-        const flavour = flavourById(button.dataset.fallbackFlavour);
-        if (!flavour) return;
-        // Surface selection in a readable way for reduced motion
+        const bottle = bottleById(button.dataset.fallbackBottle);
+        if (!bottle) return;
         fallback.querySelectorAll("button").forEach(btn => {
           btn.classList.toggle("is-active", btn === button);
         });
-        // Temporarily show detail above fallback by cloning content into a live region
         let panel = section.querySelector("[data-find-reduced-panel]");
         if (!panel) {
           panel = document.createElement("div");
@@ -851,15 +808,17 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
             <div>
               <p data-reduced-name></p>
               <p data-reduced-meta></p>
+              <p data-reduced-line></p>
             </div>
           `;
           fallback.before(panel);
         }
         const img = panel.querySelector("img");
-        img.src = flavour.bottle;
-        img.alt = `Sipzy ${flavour.name} bottle`;
-        panel.querySelector("[data-reduced-name]").textContent = flavour.name.toUpperCase();
-        panel.querySelector("[data-reduced-meta]").textContent = `${flavour.abv} · ${flavour.size}`;
+        img.src = bottle.src;
+        img.alt = `Sipzy ${bottle.name} ${bottle.abv} bottle`;
+        panel.querySelector("[data-reduced-name]").textContent = bottle.name.toUpperCase();
+        panel.querySelector("[data-reduced-meta]").textContent = `${bottle.abv} · ${bottle.size}`;
+        panel.querySelector("[data-reduced-line]").textContent = bottle.line;
       });
     });
   }
@@ -880,7 +839,6 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
     setControls();
   }
 
-  // Swipe between flavours on touch when selected
   field.addEventListener("touchstart", event => {
     if (!selectedId || event.touches.length !== 1) return;
     touchStartX = event.touches[0].clientX;
@@ -891,22 +849,26 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
     const dx = event.changedTouches[0].clientX - touchStartX;
     touchStartX = 0;
     if (Math.abs(dx) < 48) return;
-    stepFlavour(dx < 0 ? 1 : -1);
+    stepBottle(dx < 0 ? 1 : -1);
   }, { passive: true });
 
   field.addEventListener("pointermove", onPointerMove);
-  field.addEventListener("pointerleave", onPointerLeave);
+  field.addEventListener("pointerleave", onFieldPointerLeave);
   prevBtn.addEventListener("click", event => {
     event.stopPropagation();
-    stepFlavour(-1);
+    stepBottle(-1);
   });
   nextBtn.addEventListener("click", event => {
     event.stopPropagation();
-    stepFlavour(1);
+    stepBottle(1);
   });
   stage.addEventListener("click", event => {
-    if (!selectedId || transitioning) return;
-    if (event.target.closest(".find-fruit, [data-find-prev], [data-find-next]")) return;
+    if (!selectedId) return;
+    if (event.target.closest(".find-orbit-item, [data-find-prev], [data-find-next]")) return;
+    resetField();
+  });
+  stage.addEventListener("pointerleave", () => {
+    if (isMobileLike() || isReduced() || !selectedId) return;
     resetField();
   });
   document.addEventListener("keydown", event => {
@@ -936,15 +898,14 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
   reduceMotion.addEventListener("change", applyReducedMode);
   finePointer.addEventListener("change", () => {
     setControls();
-    if (!finePointer.matches) setHoverLabel(null, false);
   });
   narrowQuery.addEventListener("change", () => {
     measure();
     setControls();
   });
 
-  buildFruits();
-  bindFruitEvents();
+  buildOrbit();
+  bindOrbitEvents();
   setupFallback();
   measure();
   snapStaticLayout();
@@ -959,11 +920,6 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
       ensureLoop();
     }
   });
-
-  // Warm the first few bottles after idle
-  window.setTimeout(() => {
-    flavours.slice(0, 3).forEach(item => preloadBottle(item.bottle));
-  }, 1200);
 })();
 
 /* —— From fruit to Sipzy: scroll-scrub storytelling —— */
@@ -982,7 +938,6 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
   const fragEls = [...section.querySelectorAll("[data-fts-frag]")];
   const openerEl = section.querySelector("[data-fts-opener]");
   const phaseEl = section.querySelector("[data-fts-phase]");
-  const vortexEl = section.querySelector("[data-fts-vortex-name]");
   const revealEl = section.querySelector("[data-fts-reveal]");
   const nameEl = section.querySelector("[data-fts-name]");
   const metaEl = section.querySelector("[data-fts-meta]");
@@ -1270,10 +1225,9 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
     const compact = compactQuery.matches;
     const opener = first ? 1 - remap(t, 0.07, 0.14) : 0;
     const phase = compact ? 0 : remap(t, 0.08, 0.13) * (1 - remap(t, 0.2, 0.27));
-    const vortex = remap(t, 0.3, 0.36) * (1 - remap(t, 0.46, 0.54));
     const reveal = remap(t, 0.66, 0.74) * (last ? 1 : 1 - remap(t, 0.86, 0.96));
     const blurb = remap(t, 0.7, 0.78) * (last ? 1 : 1 - remap(t, 0.86, 0.96));
-    return { opener, phase, vortex, reveal, blurb };
+    return { opener, phase, reveal, blurb };
   }
 
   function reducedPulses(index, t) {
@@ -1281,7 +1235,6 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
     return {
       opener: first ? 1 - remap(t, 0.12, 0.28) : 0,
       phase: 0,
-      vortex: 0,
       reveal: remap(t, 0.42, 0.58),
       blurb: remap(t, 0.46, 0.62)
     };
@@ -1300,7 +1253,6 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
       setSrc(nextImg, next.fruit);
       preload(next.bottle);
     }
-    vortexEl.textContent = flavour.name;
     nameEl.textContent = flavour.name;
     metaEl.textContent = flavour.meta;
     lineEl.textContent = flavour.line;
@@ -1355,7 +1307,6 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
       const pulses = reducedPulses(index, t);
       pulseReveal(openerEl, pulses.opener);
       pulseReveal(phaseEl, pulses.phase);
-      pulseReveal(vortexEl, pulses.vortex, false);
       pulseReveal(revealEl, pulses.reveal);
       pulseReveal(blurbEl, pulses.blurb, false);
       return;
@@ -1385,7 +1336,6 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
 
     pulseReveal(openerEl, pulses.opener);
     pulseReveal(phaseEl, pulses.phase);
-    pulseReveal(vortexEl, pulses.vortex, false);
     pulseReveal(revealEl, pulses.reveal);
     pulseReveal(blurbEl, pulses.blurb, false);
   }
@@ -1422,4 +1372,109 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
   applyFlavour(0);
   applyReducedClass();
   requestPaint();
+})();
+
+/* —— Manifesto → contact: horizontal push cover —— */
+(() => {
+  const section = document.querySelector("[data-mc-push]");
+  if (!section) return;
+
+  const sticky = section.querySelector(".mc-sticky");
+  const spacer = section.querySelector("[data-mc-spacer]");
+  const from = section.querySelector("[data-mc-from]");
+  const to = section.querySelector("[data-mc-to]");
+  const pourFill = to?.querySelector(".pour-fill");
+  if (!sticky || !spacer || !from || !to) return;
+
+  let ticking = false;
+  let inView = false;
+
+  function clamp01(value) {
+    return Math.min(1, Math.max(0, value));
+  }
+
+  function scrubDistance() {
+    return Math.max(1, sticky.offsetHeight + spacer.offsetHeight - window.innerHeight);
+  }
+
+  function progress() {
+    return clamp01(-section.getBoundingClientRect().top / scrubDistance());
+  }
+
+  function contactScrollY() {
+    return section.offsetTop + scrubDistance();
+  }
+
+  function syncPourFill(p) {
+    if (!pourFill) return;
+    if (reduceMotion.matches) {
+      pourFill.classList.add("is-filled");
+      return;
+    }
+    if (p >= 0.86 && scrollingDown) {
+      if (!pourFill.classList.contains("is-filled")) {
+        pourFill.classList.add("is-filled");
+      }
+      return;
+    }
+    if (p < 0.2) {
+      pourFill.classList.remove("is-filled");
+    }
+  }
+
+  function paint() {
+    ticking = false;
+    if (reduceMotion.matches) {
+      from.style.transform = "";
+      to.style.transform = "";
+      syncPourFill(1);
+      return;
+    }
+    const p = progress();
+    from.style.transform = `translate3d(${p * 100}%, 0, 0)`;
+    to.style.transform = `translate3d(${(p - 1) * 100}%, 0, 0)`;
+    syncPourFill(p);
+  }
+
+  function requestPaint() {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(paint);
+  }
+
+  window.scrollToContactCover = (behavior = "smooth") => {
+    if (reduceMotion.matches) {
+      to.scrollIntoView({ behavior });
+      return true;
+    }
+    window.scrollTo({ top: contactScrollY(), behavior });
+    requestPaint();
+    return true;
+  };
+
+  function settleContactHash() {
+    if (location.hash !== "#contact") return;
+    window.scrollToContactCover("auto");
+  }
+
+  const viewObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      inView = entry.isIntersecting;
+      if (inView) requestPaint();
+    });
+  }, { rootMargin: "20% 0px" });
+
+  viewObserver.observe(section);
+  window.addEventListener("scroll", () => {
+    if (inView || Math.abs(section.getBoundingClientRect().top) < window.innerHeight * 1.2) {
+      requestPaint();
+    }
+  }, { passive: true });
+  window.addEventListener("resize", requestPaint);
+  reduceMotion.addEventListener("change", requestPaint);
+  window.addEventListener("hashchange", settleContactHash);
+  window.addEventListener("load", settleContactHash);
+
+  requestPaint();
+  settleContactHash();
 })();
