@@ -357,19 +357,27 @@ input {
   width: max-content;
   display: flex;
   align-items: center;
-  gap: 2.3rem;
   padding: 1.1rem 0;
-  animation: marquee 18s linear infinite;
+  animation: marquee 30s linear infinite;
+}
+.ticker-group {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 2.3rem;
+  padding-inline-end: 2.3rem;
 }
 .ticker span {
   font-family: "Fraunces", serif;
   font-size: clamp(1.5rem, 3vw, 3rem);
   font-weight: 900;
   letter-spacing: -0.04em;
+  white-space: nowrap;
 }
 .ticker i {
   font-style: normal;
   font-size: 1.2rem;
+  flex-shrink: 0;
 }
 @keyframes marquee {
   to {
@@ -378,7 +386,7 @@ input {
 }
 
 .section-pad {
-  padding: clamp(5rem, 10vw, 10rem) var(--pad);
+  padding: clamp(4rem, 10vw, 10rem) var(--pad);
 }
 .intro {
   position: relative;
@@ -1883,12 +1891,14 @@ input {
 }
 .contact h2 {
   font-size: clamp(4rem, 9vw, 10rem);
+  line-height: 1.08;
 }
 .contact em.pour-fill {
   display: inline-block;
+  padding-block: 0.06em 0.2em;
   padding-inline-end: 0.2em;
   color: transparent;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 32' preserveAspectRatio='none'%3E%3Cpath fill='%23ffb0d6' d='M0 10 Q15 0 30 10 T60 10 T90 10 T120 10 V32 H0 Z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 32' preserveAspectRatio='none'%3E%3Cpath fill='%23ffb0d6' d='M0 6 Q15 1 30 6 T60 6 T90 6 T120 6 V32 H0 Z'/%3E%3C/svg%3E");
   background-size: 200% 0%;
   background-position: 0 100%;
   background-repeat: repeat-x;
@@ -1905,11 +1915,11 @@ input {
     background-position: 0 100%;
   }
   55% {
-    background-size: 200% 72%;
+    background-size: 200% 100%;
     background-position: -45% 100%;
   }
   100% {
-    background-size: 200% 120%;
+    background-size: 200% 170%;
     background-position: -80% 100%;
   }
 }
@@ -1968,7 +1978,6 @@ input {
 }
 .reveal.is-visible {
   opacity: 1;
-  transform: translateY(0);
 }
 
 @media (max-width: 900px) {
@@ -2132,6 +2141,9 @@ input {
     animation-duration: 1ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 1ms !important;
+  }
+  .ticker-track {
+    animation: none !important;
   }
   .hero-video {
     display: none;
